@@ -11,7 +11,8 @@ def main():
         x = json.loads(line)
         sigma = sum([W[j] * x["features"][j] for j in x["features"].keys()])
         p = 1. / (1. + math.exp(-sigma)) if -100. < sigma else sys.float_info.min
-        print '%17.16f\t%s' % (abs(p - (1.0 - p)), x)
+        prediction = 1 if 0. < sigma else 0
+        print '%17.16f\t%17.16f\t%d\t%s' % (abs(p - (1.0 - p)), p, prediction, x)
     
 if __name__ == '__main__':
     main()
