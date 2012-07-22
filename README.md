@@ -36,11 +36,6 @@ The Python scripts implement the key parts of a complete active learning workflo
 * test, and
 * predict.
 
-The following diagram shows the relationship between these job flows and the datasets being produced and processed by them.
-
-![Active Learning Jobflows](https://github.com/bradleypallen/active_learning_jobflows.png "Active Learning Jobflows")
-
-
 ## From a UNIX shell
 For small data sets, the scripts can be run from the command line.
 
