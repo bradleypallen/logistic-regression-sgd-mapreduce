@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import collections, math, sys, json
+import collections, math, sys, json, urllib2, os
 
 def main():
     W = collections.defaultdict(float)
-    with open(sys.argv[1], 'r') as model:
-        for f, w in json.loads(model.readline()).items():
-            W[f] = w
+    model = urllib2.urlopen(os.environ['MODEL'])
+    for f, w in json.loads(model.readline().strip()).items():
+        W[f] = w
     for line in sys.stdin:
         x = json.loads(line)
         sigma = sum([W[j] * x["features"][j] for j in x["features"].keys()])

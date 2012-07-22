@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-import collections, math, sys, json
+import collections, math, sys, json, os
 
 def main():
-    mu = 0.002
-    eta = 0.5
+    mu = float(os.environ['MU']) if os.environ.has_key('MU') else 0.002
+    eta = float(os.environ['ETA']) if os.environ.has_key('ETA') else 0.5
+    N = float(os.environ['N']) if os.environ.has_key('N') else 10000.
     t = 0
-    N = 300.
     W = collections.defaultdict(float)
     A = collections.defaultdict(int)
     for line in sys.stdin:
