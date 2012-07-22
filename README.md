@@ -82,17 +82,17 @@ For large-scale data sets, the scripts can be run using Hadoop streaming in Elas
 
 ### Test a model
     $ ./elastic-mapreduce --create --stream \
-		--input s3n://path/to/your/bucket/train.data \
-		--mapper s3n://path/to/your/bucket/train_map.py \
-		--reducer s3n://path/to/your/bucket/train_reduce.py \
+		--input s3n://path/to/your/bucket/test.data \
+		--mapper s3n://path/to/your/bucket/test_map.py \
+		--reducer s3n://path/to/your/bucket/test_reduce.py \
 		--output s3n://path/to/your/bucket/confusion-matrix
 		--cmdenv MODEL=https://s3.amazonaws.com/path/to/your/bucket/model/part-00000
 		
 ### Predict
     $ ./elastic-mapreduce --create --stream \
-		--input s3n://path/to/your/bucket/train.data \
-		--mapper s3n://path/to/your/bucket/train_map.py \
-		--reducer s3n://path/to/your/bucket/train_reduce.py \
+		--input s3n://path/to/your/bucket/unlabeled.data \
+		--mapper s3n://path/to/your/bucket/predict_map.py \
+		--reducer s3n://path/to/your/bucket/predict_reduce.py \
 		--output s3n://path/to/your/bucket/predictions
 		--cmdenv MODEL=https://s3.amazonaws.com/path/to/your/bucket/model/part-00000
     
