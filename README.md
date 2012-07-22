@@ -67,6 +67,7 @@ Generate a confusion matrix based on running a model against a test set of label
     
 ### Predict classes for a set of instances
 Generate a tab-separated file containing a line per instance in an input set of unlabeled (or unlabeled) instances with the following fields:
+
 1. the margin,
 2. the estimated probability of class membership,
 3. the prediction of class membership (0 or 1), and
