@@ -58,7 +58,14 @@ Generate a confusion matrix based on running a model against test data. The loca
     $ cat test.data | ./test_map.py | sort | ./test_reduce.py > confusion-matrix
     
 ### Predict
-Generate a tab-separated file containing an instance preceded by a margin-based certainty based on the estimated probability of the instance, sorted in increasing order of certainty.
+Generate a tab-separated file containing an instance preceded by:
+
+1. a margin-based certainty based on the estimated probability of the instance,
+2. the estimated probability,
+3. the prediction of class membership (0 or 1), and
+4. the JSON representation of the instance.
+ 
+The output is sorted in increasing order of certainty. The output file is intended to support active learning workflows; the first line in the file, given the use of margin uncertainty, is the most informative instance to provide to a subject matter expert to obtain the correct class of the instance.
 
     $ export MODEL=file:///path/to/your/model
     $ cat test.data | ./predict_map.py | sort | ./predict_reduce.py > predictions
