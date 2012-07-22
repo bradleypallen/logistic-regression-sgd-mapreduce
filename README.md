@@ -30,6 +30,16 @@ Python scripts for building binary classifiers using logistic regression with st
     <count>            ::= a JSON int in the interval [0, inf)
     
 # Usage
+The Python scripts implement the key parts of a complete active learning workflow:
+
+* train,
+* test, and
+* predict.
+
+The following diagram shows the relationship between these job flows and the datasets being produced and processed by them.
+
+![Active Learning Jobflows](./active_learning_jobflows.png "Active Learning Jobflows")
+
 
 ## From a UNIX shell
 For small data sets, the scripts can be run from the command line.
@@ -65,7 +75,7 @@ Generate a tab-separated file containing a line per instance in the input file w
 3. the prediction of class membership (0 or 1), and
 4. the JSON representation of the instance.
  
-The output file is intended to support active learning workflows; smaller margin implies greater uncertainty given the model, so given the output is sorted in increasing order of margin, the first line in the file can be used as the most informative instance to provide to a subject matter expert to determine the correct class of the instance. Additionally, instances over a threshold margin can be automatically assigned the predicted class and added to a training set to refine the model.
+The output file is intended to support active learning workflows; smaller margin implies greater uncertainty given the model, so given the output is sorted in increasing order of margin, the first line in the file can be used as the most informative instance to provide to a subject matter expert for review to determine the correct class of the instance. Additionally, instances over a threshold margin can be automatically labled with the predicted class and added to a training set to refine the model.
 
     $ export MODEL=file:///path/to/your/model
     $ cat test.data | ./predict_map.py | sort | ./predict_reduce.py > predictions
