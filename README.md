@@ -14,18 +14,18 @@ Python scripts for building binary classifiers using logistic regression with st
     $ cd logistic-regression-sgd-mapreduce    $ chmod +x *.py
 
 # Data formats
-The scripts use JSON objects to represent instances, models and confusion matrices. These objects can have additional keys associated with them beyond the ones specified below; for example, each instance can have an id key, contain key/value pairs with additional provenance information, etc.
+The scripts use JSON objects to represent instances, models and confusion matrices. These objects can have additional keys associated with them beyond the ones specified below; for example, each instance can have a key/value pair providing an identifier, contain key/value pairs with additional provenance information, etc.
 
 ## Instances
     <instance>           ::= <unlabeled-instance> | <labeled-instance>
     <unlabeled-instance> ::= { "features": { <feature>: <value>, … , <feature>: <value> } }
     <labeled-instance>   ::= { "class": <class>, "features": { <feature>: <value>, … , <feature>: <value> } }
-    <class>    ::= 0 | 1
-    <feature>  ::= a JSON string
-    <value>    ::= a JSON float in the interval [0.0, 1.0]   
+    <class>              ::= 0 | 1
+    <feature>            ::= a JSON string
+    <value>              ::= a JSON float in the interval [0.0, 1.0]   
 
 ## Models
-    <model> ::= { <feature>: <weight>, … , <feature>: <weight> }
+    <model>  ::= { <feature>: <weight>, … , <feature>: <weight> }
     <weight> ::= a JSON float in the interval [0.0, 1.0]
 
 ## Confusion matrices
@@ -53,7 +53,7 @@ Generate a model by running a single pass of the learning algorithm over a train
 
     $ cat train.data | ./train_map.py | sort | ./train_reduce.py > /path/to/your/model
     
-Hyperparameters can be optionally set as environment variables, e.g.:
+Three hyperparameters can be optionally set as environment variables, e.g.:
 
     $ export MU=0.002   # the regularization parameter
     $ export ETA=0.5    # the learning rate
