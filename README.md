@@ -26,13 +26,13 @@ The scripts use JSON objects to represent instances, models and confusion matric
     <value>              ::= a JSON float in the interval [0.0, 1.0]   
 
 ## Models
-    <model>  ::= { <parameter>, … <parameter>, <parameter> }
-    <parameter> ::= <feature>: <weight>
-    <weight> ::= a JSON float in the interval [0.0, 1.0]
+    <model>              ::= { <parameter>, … <parameter>, <parameter> }
+    <parameter>          ::= <feature>: <weight>
+    <weight>             ::= a JSON float in the interval [0.0, 1.0]
 
 ## Confusion matrices
-    <confusion_matrix> ::= { "TP": <count>, "FP": <count>, "FN": <count>, "TN": <count> }
-    <count>            ::= a JSON int in the interval [0, inf)
+    <confusion_matrix>   ::= { "TP": <count>, "FP": <count>, "FN": <count>, "TN": <count> }
+    <count>              ::= a JSON int in the interval [0, inf)
     
 # Usage
 The Python scripts implement the key parts of a complete active learning workflow:
