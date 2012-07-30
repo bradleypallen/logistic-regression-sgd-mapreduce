@@ -1,8 +1,10 @@
 #!/usr/bin/env python
  
-import collections, math, sys, json
+import collections, math, sys, json, datetime, urllib2, os
  
-def main(separator='\t'):
+def main():
+    model = json.loads(urllib2.urlopen(os.environ['MODEL']).readline().strip())
+    date_created = datetime.datetime.utcnow().isoformat() + 'Z'
     matrix = collections.defaultdict(int)
     for line in sys.stdin:
         trial = line.strip().split('\t')
@@ -18,7 +20,11 @@ def main(separator='\t'):
                 matrix["TN"] += 1
             else:
                 matrix["FP"] += 1
-    print json.dumps(matrix)
+    print json.dumps({
+            "model": model["id"],
+            "date_created": date_created,
+            "confusion_matrix": matrix
+        })
  
 if __name__ == "__main__":
     main()

@@ -1,4 +1,4 @@
 model
-confusion-matrix
+test
 predictions
 *.data

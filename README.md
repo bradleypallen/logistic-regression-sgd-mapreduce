@@ -17,22 +17,32 @@ Python scripts for building binary classifiers using logistic regression with st
 The scripts use JSON objects to represent instances, models and confusion matrices. These objects can have additional keys associated with them beyond the ones specified below; for example, each instance can have a key/value pair providing an identifier, contain key/value pairs with additional provenance information, etc.
 
 ## Instances
-    <instance>           ::= <unlabeled-instance> | <labeled-instance>
-    <unlabeled-instance> ::= { "features": { <fv-pair>, … <fv-pair>, <fv-pair> } }
-    <labeled-instance>   ::= { "class": <class>, "features": { <fv-pair>, … <fv-pair>, <fv-pair> } }
+    <instance>           ::= <labeled-instance> | <unlabeled-instance>
+    <labeled-instance>   ::= { "class": <class>, "features": <features> }
+    <unlabeled-instance> ::= { "features": <features> }
     <class>              ::= 0 | 1
+    <features>           ::= { <fv-pair>, … <fv-pair>, <fv-pair> }
     <fv-pair>            ::= <feature>: <value>
-    <attribute>          ::= a JSON string
+    <feature>            ::= a JSON string
     <value>              ::= a JSON float in the interval [0.0, 1.0]   
 
 ## Models
-    <model>              ::= { <parameter>, … <parameter>, <parameter> }
+    <model>              ::= { "id": <uuid>, "date_created": <iso-date>, "parameters": <parameters> }
+    <uuid>               ::= a JSON string that is a UUID
+    <iso-date>           ::= a JSON string that is an ISO 8601 datetime with Zulu (GMT) time zone
+    <parameters>         ::= { <parameter>, … <parameter>, <parameter> }
     <parameter>          ::= <feature>: <weight>
     <weight>             ::= a JSON float in the interval [0.0, 1.0]
 
-## Confusion matrices
-    <confusion_matrix>   ::= { "TP": <count>, "FP": <count>, "FN": <count>, "TN": <count> }
+## Tests
+    <test>               ::= { "model": <uuid>, "date_created": <iso-date>, "confusion_matrix": <matrix> }
+    <matrix>             ::= { "TP": <count>, "FP": <count>, "FN": <count>, "TN": <count> }
     <count>              ::= a JSON int in the interval [0, inf)
+    
+## Predictions
+    <prediction>         ::= { "model": <uuid>, "date_created": <iso-date>, "margin": <margin>, "p": <p>, "prediction": <class>, "instance": <instance> }
+    <margin>             ::= a JSON float in the interval [0.0, 1.0]
+    <p>                  ::= a JSON float in the interval [0.0, 1.0]    
     
 # Usage
 The Python scripts implement the key parts of a complete active learning workflow:
@@ -65,15 +75,17 @@ Three hyperparameters can be optionally set as environment variables, e.g.:
 Generate a confusion matrix based on running a model against a test set of labeled instances. The location of the model is passed as an environment variable that is a valid URL.
 
     $ export MODEL=file:///path/to/your/model # in this example we're loading from a file on the local system
-    $ cat test.data | ./test_map.py | sort | ./test_reduce.py > confusion-matrix
+    $ cat test.data | ./test_map.py | sort | ./test_reduce.py > test
     
 ### Predict classes for a set of instances
-Generate a tab-separated file containing a line per instance in an input set of unlabeled (or unlabeled) instances with the following fields:
+Generate a file containing prediction for each instance in an input set of unlabeled (or unlabeled) instances as JSON objects with the following keys:
 
-1. the margin,
-2. the estimated probability of class membership,
-3. the prediction of class membership (0 or 1), and
-4. the JSON representation of the instance.
+1. model: the UUID of the model used to generate the predictions
+2. date_created: the date and time that the predictions were made
+2. p: the estimated probability of class membership (i.e., p(y=1|x))
+2. margin: a measure of the certainty of the prediction, calculated as abs(p(y=1|x) - p(y=0|x))
+3. prediction: the prediction of class membership (0 or 1)
+4. instance: the JSON representation of the instance
  
 The output file is intended to support active learning workflows; smaller margin implies greater uncertainty given the model, so given the output is sorted in increasing order of margin, the first line in the file can be used as the most informative instance to provide to a subject matter expert for review to determine the correct class of the instance. Additionally, instances over a threshold margin can be automatically labled with the predicted class and added to a training set to refine the model.
 
@@ -89,6 +101,7 @@ For large-scale data sets, the scripts can be run using Hadoop streaming in Elas
 		--mapper s3n://path/to/your/bucket/train_map.py \
 		--reducer s3n://path/to/your/bucket/train_reduce.py \
 		--output s3n://path/to/your/bucket/model
+		--cmdenv N=2000
 
 ### Test a model
     $ ./elastic-mapreduce --create --stream \
