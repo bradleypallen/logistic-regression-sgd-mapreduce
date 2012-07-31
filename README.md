@@ -37,8 +37,8 @@ The scripts use JSON objects to represent instances, models, tests and predictio
     <weight>             ::= a JSON float in the interval [0.0, 1.0]
 
 ## Tests
-    <test>               ::= { "model": <uuid>, "date_created": <iso-date>, "confusion_matrix": <matrix> }
-    <matrix>             ::= { "TP": <count>, "FP": <count>, "FN": <count>, "TN": <count> }
+    <test>               ::= { "model": <uuid>, "date_created": <iso-date>, "confusion_matrix": <confusion-matrix> }
+    <confusion-matrix>   ::= { "TP": <count>, "FP": <count>, "FN": <count>, "TN": <count> }
     
 ## Predictions
     <prediction>         ::= { "model": <uuid>, "date_created": <iso-date>, "margin": <margin>, "p": <p>, "prediction": <class>, "instance": <instance> }
@@ -55,14 +55,14 @@ The Python scripts implement the key parts of a complete active learning workflo
 ## From a UNIX shell
 For small data sets, the scripts can be run from the command line.
 
-### Convert data in SVM<sup><i>Light</i></sup> format into labeled instances
+### Converting data in SVM<sup><i>Light</i></sup> format into labeled instances
 Convert a file with data in SVM<sup><i>Light</i></sup> [[8]] format into a file containing instances. Awk, sort and cut are used here to randomly shuffle the data set, which is required to correctly train the model.
 
     $  cat train.data.svmlight | ./parse_svmlight_examples.py | awk 'BEGIN{srand();} {printf "%06d %s\n", rand()*1000000, $0;}' | sort -n | cut -c8- > train.data
     $  cat test.data.svmlight | ./parse_svmlight_examples.py | awk 'BEGIN{srand();} {printf "%06d %s\n", rand()*1000000, $0;}' | sort -n | cut -c8- > test.data
 
-### Train a model
-Generate a model by running a single pass of the learning algorithm over a training set of labeled instances. Three hyperparameters can be optionally set as environment variables.
+### Training a model
+Generate a model by running a single pass of the learning algorithm over a training set of labeled instances. Three hyperparameters can be optionally set using environment variables.
 
 
     $ export MU=0.002   # the regularization parameter
@@ -70,13 +70,13 @@ Generate a model by running a single pass of the learning algorithm over a train
     $ export N=2000000   # the number of instances in the training set
     $ cat train.data | ./train_map.py | sort | ./train_reduce.py > /path/to/your/model
 
-### Test a model
-Generate a timestamped-record with a confusion matrix based on running a model against a test set of labeled instances. The location of the model is passed as an environment variable that is a valid URL.
+### Testing a model
+Generate a timestamped record with a confusion matrix, computed by running a model against a test set of labeled instances. The location of the model is passed as an environment variable whose value is a valid URL.
 
     $ export MODEL=file:///path/to/your/model # in this example we're loading from a file on the local system
     $ cat test.data | ./test_map.py | sort | ./test_reduce.py > test
     
-### Predict classes for a set of instances
+### Predicting classes for a set of instances
 Generate a file containing prediction for each instance in an input set of unlabeled (or unlabeled) instances as JSON objects with the following keys:
 
 1. model: the UUID of the model used to generate the predictions
