@@ -14,7 +14,7 @@ Python scripts for building binary classifiers using logistic regression with st
     $ cd logistic-regression-sgd-mapreduce    $ chmod +x *.py
 
 # Data formats
-The scripts use JSON objects to represent instances, models and confusion matrices. These objects can have additional keys associated with them beyond the ones specified below; for example, each instance can have a key/value pair providing an identifier, contain key/value pairs with additional provenance information, etc.
+The scripts use JSON objects to represent instances, models, tests and predictions. These objects can have additional keys associated with them beyond the ones specified below; for example, each instance can have a key/value pair providing an identifier, contain key/value pairs with additional provenance information, etc.
 
 ## Instances
     <instance>           ::= <labeled-instance> | <unlabeled-instance>
@@ -27,9 +27,11 @@ The scripts use JSON objects to represent instances, models and confusion matric
     <value>              ::= a JSON float in the interval [0.0, 1.0]   
 
 ## Models
-    <model>              ::= { "id": <uuid>, "date_created": <iso-date>, "parameters": <parameters> }
+    <model>              ::= { "id": <uuid>, "date_created": <iso-date>, "mu": <float>, "eta": <float>, "N": <positive-integer>, "parameters": <parameters> }
     <uuid>               ::= a JSON string that is a UUID
     <iso-date>           ::= a JSON string that is an ISO 8601 datetime with Zulu (GMT) time zone
+    <float>              ::= a JSON float
+    <count>              ::= a JSON int in the interval [0, inf)
     <parameters>         ::= { <parameter>, … <parameter>, <parameter> }
     <parameter>          ::= <feature>: <weight>
     <weight>             ::= a JSON float in the interval [0.0, 1.0]
@@ -37,7 +39,6 @@ The scripts use JSON objects to represent instances, models and confusion matric
 ## Tests
     <test>               ::= { "model": <uuid>, "date_created": <iso-date>, "confusion_matrix": <matrix> }
     <matrix>             ::= { "TP": <count>, "FP": <count>, "FN": <count>, "TN": <count> }
-    <count>              ::= a JSON int in the interval [0, inf)
     
 ## Predictions
     <prediction>         ::= { "model": <uuid>, "date_created": <iso-date>, "margin": <margin>, "p": <p>, "prediction": <class>, "instance": <instance> }
@@ -61,18 +62,16 @@ Convert a file with data in SVM<sup><i>Light</i></sup> [[8]] format into a file 
     $  cat test.data.svmlight | ./parse_svmlight_examples.py | awk 'BEGIN{srand();} {printf "%06d %s\n", rand()*1000000, $0;}' | sort -n | cut -c8- > test.data
 
 ### Train a model
-Generate a model by running a single pass of the learning algorithm over a training set of labeled instances.
+Generate a model by running a single pass of the learning algorithm over a training set of labeled instances. Three hyperparameters can be optionally set as environment variables.
 
-    $ cat train.data | ./train_map.py | sort | ./train_reduce.py > /path/to/your/model
-    
-Three hyperparameters can be optionally set as environment variables, e.g.:
 
     $ export MU=0.002   # the regularization parameter
     $ export ETA=0.5    # the learning rate
-    $ export N=100000   # the number of instances in the training set
+    $ export N=2000000   # the number of instances in the training set
+    $ cat train.data | ./train_map.py | sort | ./train_reduce.py > /path/to/your/model
 
 ### Test a model
-Generate a confusion matrix based on running a model against a test set of labeled instances. The location of the model is passed as an environment variable that is a valid URL.
+Generate a timestamped-record with a confusion matrix based on running a model against a test set of labeled instances. The location of the model is passed as an environment variable that is a valid URL.
 
     $ export MODEL=file:///path/to/your/model # in this example we're loading from a file on the local system
     $ cat test.data | ./test_map.py | sort | ./test_reduce.py > test
@@ -108,7 +107,7 @@ For large-scale data sets, the scripts can be run using Hadoop streaming in Elas
 		--input s3n://path/to/your/bucket/test.data \
 		--mapper s3n://path/to/your/bucket/test_map.py \
 		--reducer s3n://path/to/your/bucket/test_reduce.py \
-		--output s3n://path/to/your/bucket/confusion-matrix
+		--output s3n://path/to/your/bucket/test
 		--cmdenv MODEL=https://s3.amazonaws.com/path/to/your/bucket/model/part-00000
 		
 ### Predict classes for a set of instances
