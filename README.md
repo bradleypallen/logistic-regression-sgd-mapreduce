@@ -18,18 +18,18 @@ The scripts use JSON objects to represent instances, models, tests and predictio
 
 ## Instances
     <instance>           ::= <labeled-instance> | <unlabeled-instance>
-    <labeled-instance>   ::= { "class": <class>, "features": <features> }
-    <unlabeled-instance> ::= { "features": <features> }
+    <labeled-instance>   ::= { "date_created": <iso-date>, "random_key": <value>, "class": <class>, "features": <features> }
+    <unlabeled-instance> ::= { "date_created": <iso-date>, "random_key": <value>, "features": <features> }
+    <iso-date>           ::= a JSON string that is an ISO 8601 datetime with Zulu (GMT) time zone
+    <value>              ::= a JSON float in the interval [0.0, 1.0]   
     <class>              ::= 0 | 1
     <features>           ::= { <fv-pair>, … <fv-pair>, <fv-pair> }
     <fv-pair>            ::= <feature>: <value>
     <feature>            ::= a JSON string
-    <value>              ::= a JSON float in the interval [0.0, 1.0]   
 
 ## Models
     <model>              ::= { "id": <uuid>, "date_created": <iso-date>, "mu": <float>, "eta": <float>, "N": <positive-integer>, "parameters": <parameters> }
     <uuid>               ::= a JSON string that is a UUID
-    <iso-date>           ::= a JSON string that is an ISO 8601 datetime with Zulu (GMT) time zone
     <float>              ::= a JSON float
     <count>              ::= a JSON int in the interval [0, inf)
     <parameters>         ::= { <parameter>, … <parameter>, <parameter> }
