@@ -9,8 +9,9 @@ def main():
         print json.dumps({
             "date_created": date_created,
             "random_key": float(example[0]),
-            "class": int(example[1]), 
-            "features": json.loads(example[2])
+            "id": example[1], 
+            "class": int(example[2]), 
+            "features": json.loads(example[3])
             })
     
 if __name__ == '__main__':

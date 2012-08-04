@@ -1,4 +1,6 @@
 model
 test
 predictions
+validation
+queries
 *.data
