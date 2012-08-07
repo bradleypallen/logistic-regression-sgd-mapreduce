@@ -1,11 +1,11 @@
 #!/usr/bin/env python
  
-import collections, math, sys, json, datetime, urllib2, os
+import math, sys, json, datetime, urllib2, os
  
 def main():
     model = json.loads(urllib2.urlopen(os.environ['MODEL']).readline().strip())
     date_created = datetime.datetime.utcnow().isoformat() + 'Z'
-    matrix = collections.defaultdict(int)
+    matrix = { "TP": 0, "FP": 0, "TN": 0, "FN": 0 }
     for line in sys.stdin:
         trial = line.strip().split('\t')
         prediction = int(trial[0])

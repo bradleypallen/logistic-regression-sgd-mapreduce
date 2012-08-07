@@ -12,7 +12,7 @@ def main():
     A = collections.defaultdict(int)
     for line in sys.stdin:
         x = json.loads(line)
-        if x.has_key('class') and x["random_key"] <= split:
+        if x.has_key('class') and x["random_key"] > split:
             sigma = sum([W[j] * x["features"][j] for j in x["features"].keys()])
             p = 1. / (1. + math.exp(-sigma)) if -100. < sigma else sys.float_info.min
             t += 1

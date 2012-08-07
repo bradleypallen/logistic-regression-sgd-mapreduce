@@ -4,3 +4,4 @@ predictions
 validation
 queries
 *.data
+*.pyc
