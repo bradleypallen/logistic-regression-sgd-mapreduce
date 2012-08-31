@@ -1,8 +1,13 @@
 logistic-regression-sgd-mapreduce
 =================================
+<p>
+Bradley P. Allen</br>
+Elsevier Labs</br>
+2012-08-30
+</p>
 
 # Overview
-Python scripts for building binary classifiers using logistic regression with stochastic gradient descent, packaged for use with map-reduce platforms supporting Hadoop streaming.
+This repository contains Python scripts for building binary classifiers using logistic regression with stochastic gradient descent, packaged for use with map-reduce platforms supporting Hadoop streaming. This implementation is closely based on the algorithm described by William Cohen in his class notes on implementing stochastic gradient descent in his Machine Learning with Large Datasets 10-605 course at Carnegie-Mellon University in Spring 2012.
 
 # ￼Algorithm
 * Distributed regularized binary logistic regression with stochastic gradient descent [[1]], [[2]]
@@ -137,13 +142,17 @@ As another example, the EMR command that parallels the test example in the secti
 		--reducer s3n://path/to/your/bucket/test_reduce.py \
 		--output s3n://path/to/your/bucket/test
 		--cmdenv MODEL=https://s3.amazonaws.com/path/to/your/bucket/model/part-00000
+		
+# License
+This code is provided under the terms of an MIT License [[9]]. See the LICENSE file for the copyright notice.
     
 # References
 
 [[1]] Cohen, W. Stochastic Gradient Descent. <i>Downloaded from http://www.cs.cmu.edu/~wcohen/10-605/notes/sgd-notes.pdf</i> (2012).
 [[2]] Zinkevich, M., Smola, A. & Weimer, M. Parallelized Stochastic Gradient Descent. <i>Advances in Neural Information Processing Systems 23, 1-9</i> (2010).[[3]] Lin, J. & Kolcz, A. Large-Scale Machine Learning at Twitter. <i>SIGMOD</i> (2012).[[4]] Weinberger, K., Dasgupta, A., Attenberg, J., Langford, J. & Smola, A. Feature hashing for large scale multitask learning. <i>ICML</i> (2009).[[5]] Attenberg, J., Weinberger, K., Dasgupta, A., Smola, A. & Zinkevich, M. Collaborative Email-Spam Filtering with the Hashing-Trick. <i>CEAS 2009</i> (2009).[[6]] Schein, A. & Ungar, L. Active Learning for Logistic Regression: An Evaluation. <i>Machine Learning 68(3), 235-265</i> (2007).[[7]] Sculley, D., Otey, M.E., Pohl, M., Spitznagel, B. & Hainsworth, J. Detecting Adversarial Advertisements in the Wild. <i>KDD’11</i> (2011).
-[[8]] Joachims, T. SVM<sup><i>Light</i></sup> Support Vector Machine. <i>Downloaded from http://svmlight.joachims.org/</i> (2008).
+[[8]] Joachims, T. SVM<sup><i>Light</i></sup> Support Vector Machine. <i>Downloaded from http://svmlight.joachims.org/</i> (2008).[[9]] Open Source Initiative (OSI). The MIT License. <i>Downloaded from http://www.opensource.org/licenses/mit-license.php</i> (2012).
 
 [1]: http://www.cs.cmu.edu/~wcohen/10-605/notes/sgd-notes.pdf "Cohen, W. Stochastic Gradient Descent. Downloaded from http://www.cs.cmu.edu/~wcohen/10-605/notes/sgd-notes.pdf. (2012)."[2]: http://www.martin.zinkevich.org/publications/nips2010.pdf "Zinkevich, M., Smola, A. & Weimer, M. Parallelized Stochastic Gradient Descent. Advances in Neural Information Processing Systems 23, 1-9 (2010)."
 [3]: http://www.umiacs.umd.edu/~jimmylin/publications/Lin_Kolcz_SIGMOD2012.pdf "Lin, J. & Kolcz, A. Large-Scale Machine Learning at Twitter. SIGMOD (2012)."[4]: http://arxiv.org/pdf/0902.2206.pdf "Weinberger, K., Dasgupta, A., Attenberg, J., Langford, J. & Smola, A. Feature hashing for large scale multitask learning. ICML (2009)."[5]: http://ceas.cc/2009/papers/ceas2009-paper-11.pdf "Attenberg, J., Weinberger, K., Dasgupta, A., Smola, A. & Zinkevich, M. Collaborative Email-Spam Filtering with the Hashing-Trick. CEAS 2009 (2009)."[6]: http://www.andrewschein.com/publications/scheinML2007.pdf "Schein, A. & Ungar, L. Active Learning for Logistic Regression: An Evaluation. Machine Learning 68(3), 235-265 (2007)."[7]: http://www.eecs.tufts.edu/~dsculley/papers/adversarial-ads.pdf "Sculley, D., Otey, M.E., Pohl, M., Spitznagel, B. & Hainsworth, J. Detecting Adversarial Advertisements in the Wild. KDD’11 (2011)."
 [8]: http://svmlight.joachims.org/ "Joachims, T. SVM<sup><i>Light</i></sup> Support Vector Machine. Downloaded from http://svmlight.joachims.org/. (2008)."
+[9]: http://www.opensource.org/licenses/mit-license.php "Open Source Initiative OSI - The MIT License"
