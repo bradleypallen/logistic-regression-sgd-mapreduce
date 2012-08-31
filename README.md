@@ -1,13 +1,9 @@
 logistic-regression-sgd-mapreduce
 =================================
-<p>
-Bradley P. Allen</br>
-Elsevier Labs</br>
-2012-08-30
-</p>
+Bradley P. Allen, Elsevier Labs, 2012-08-30
 
 # Overview
-This repository contains Python scripts for building binary classifiers using logistic regression with stochastic gradient descent, packaged for use with map-reduce platforms supporting Hadoop streaming. This implementation is closely based on the algorithm described by William Cohen in his class notes on implementing stochastic gradient descent in his Machine Learning with Large Datasets 10-605 course at Carnegie-Mellon University in Spring 2012.
+This repository contains Python scripts for building binary classifiers using logistic regression with stochastic gradient descent, packaged for use with map-reduce platforms supporting Hadoop streaming. This implementation is closely based on the algorithm described by William Cohen in his class notes on stochastic gradient descent from his Machine Learning with Large Datasets 10-605 course at Carnegie-Mellon University in Spring 2012 [[1]].
 
 # ￼Algorithm
 * Distributed regularized binary logistic regression with stochastic gradient descent [[1]], [[2]]
