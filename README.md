@@ -73,7 +73,7 @@ Three hyperparameters (MU, ETA and N) can be optionally set using environment va
 
     $ export MU=0.002   # the regularization parameter
     $ export ETA=0.5    # the learning rate
-    $ export N=2000000  # the number of instances in the training set
+    $ export N=2000     # the number of instances in the training set
     $ export SPLIT=0.3  # the fraction of the total set of labelled instances sampled for testing (this setting yields a 70/30 train/test split)
     $ cat train.data | ./train_mapper.py | sort | ./train_reducer.py > /path/to/your/model
 
