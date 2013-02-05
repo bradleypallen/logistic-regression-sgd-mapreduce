@@ -3,5 +3,8 @@ test
 predictions
 validation
 queries
+example1/*
 *.data
 *.pyc
+*.gz
+*.*sublime*

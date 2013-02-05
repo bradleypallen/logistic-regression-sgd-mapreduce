@@ -7,6 +7,7 @@ def main():
     eta = float(os.environ['ETA']) if os.environ.has_key('ETA') else 0.5
     N = float(os.environ['N']) if os.environ.has_key('N') else 10000.
     split = float(os.environ['SPLIT']) if os.environ.has_key('SPLIT') else 0.3
+    n_models_key = os.environ['N_MODELS_KEY'] if os.environ.has_key('N_MODELS_KEY') else 'MODEL'
     t = 0
     W = collections.defaultdict(float)
     A = collections.defaultdict(int)
@@ -24,6 +25,7 @@ def main():
                 A[j] = t
     lambd4 = eta / (1. + (float(t) / N))
     penalty = 1. - (2. * lambd4 * mu)
+    print "%s\t%17.16f" % (n_models_key, 1.)
     for j in W.keys():
         W[j] *= math.pow(penalty, t - A[j])
         print "%s\t%17.16f" % (j, W[j])

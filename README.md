@@ -35,7 +35,7 @@ The scripts use JSON objects to represent instances, models, tests and predictio
     <feature>            ::= a JSON string
 
 ## Models
-    <model>              ::= { "id": <uuid>, "date_created": <iso-date>, "mu": <float>, "eta": <float>, "N": <positive-integer>, "parameters": <parameters> }
+    <model>              ::= { "id": <uuid>, "models": <float>, date_created": <iso-date>, "mu": <float>, "eta": <float>, "N": <positive-integer>, "parameters": <parameters> }
     <uuid>               ::= a JSON string that is a UUID
     <float>              ::= a JSON float
     <count>              ::= a JSON int in the interval [0, inf)
@@ -69,13 +69,14 @@ Convert a file with data in SVM<sup><i>Light</i></sup> [[8]] format into a file 
 ### Training a model
 Generate a model by running a single pass of the learning algorithm over a training set of labeled instances. 
 
-Three hyperparameters (MU, ETA and N) can be optionally set using environment variables. The SPLIT environment variable determines the train/test split; only those labeled instances with random_key greater than or equal to SPLIT are used to update the model parameters. The mapper produces the feature string as the key with the trained weight; the reducer averages the weights associated with each feature to generate the final set of parameters. Unlabeled instances are not processed.
+Three hyperparameters (MU, ETA and N) can be optionally set using environment variables. The SPLIT environment variable determines the train/test split; only those labeled instances with random_key greater than or equal to SPLIT are used to update the model parameters. The N_MODELS_KEY environment variable provides a unique key that will be used to compute the total number of models trained; take care to specify a key that cannot occur as a feature of any instance in the training set. When used from the command line this key will simply be assigned the value 1.0 by the mapper, as only one model will be trained corresponding to the single mapper process; when used with Hadoop streaming (as described below in the section "Using Elastic MapReduce") after the reduce tasks are executed, the value will be equal to the total number of mapper tasks executed, each of which trains a model whose weights will be averaged to generate the final output model. The mapper produces the feature string as the key with the trained weight; the reducer sums the weights associated with each key to generate the final set of key/value pairs as a tab-separated value (TSV) file. Unlabeled instances are not processed. model_encoder.py iterates through the output of the reduce step to generate a model JSON object, which can be written to a file.
 
-    $ export MU=0.002   # the regularization parameter
-    $ export ETA=0.5    # the learning rate
-    $ export N=2000     # the number of instances in the training set
-    $ export SPLIT=0.3  # the fraction of the total set of labelled instances sampled for testing (this setting yields a 70/30 train/test split)
-    $ cat train.data | ./train_mapper.py | sort | ./train_reducer.py > /path/to/your/model
+    $ export MU=0.002 # the regularization parameter
+    $ export ETA=0.5 # the learning rate
+    $ export N=2000 # the number of instances in the training set
+    $ export SPLIT=0.3 # the fraction of the total set of labelled instances sampled for testing (this setting yields a 70/30 train/test split)
+    $ export N_MODELS_KEY=MODELS # the key used to accumulate the total number of models created by mapper tasks
+    $ cat train.data | ./train_mapper.py | sort | ./train_reducer.py | ./model_encoder.py > /path/to/your/model
 
 ### Validating and testing a model
 Generate a timestamped record with a confusion matrix, computed by running a model against a test set of labeled instances. 
@@ -85,13 +86,13 @@ The location of the model is passed as an environment variable whose value is a 
 Validation is performed against a training set generated as shown above in the section "Converting data in SVM<sup><i>Light</i></sup> format into labeled instances". A model produced as shown above in the section "Training a model" is passed to the mapper through the MODEL environment variable. Labeled instances with random_key less than SPLIT are used to generate predictions. Unlabeled instances are not processed.
 
     $ export MODEL=file:///path/to/your/model # in this example we're loading from a file on the local system; note that this is expressed as a file: URL
-    $ export SPLIT=0.3  # the fraction of the total set of labelled instances sampled for testing
+    $ export SPLIT=0.3 # the fraction of the total set of labelled instances sampled for testing
     $ cat train.data | ./validate_mapper.py | sort | ./test_reducer.py > validation
     
 Additionally, a model can be tested against a separately created hold-out test set of labeled instances using the test_map.py mapper. All of the labelled instances in the test set will be used to generate predictions.
     
     $ export MODEL=file:///path/to/your/model # in this example we're loading from a file on the local system; note that this is expressed as a file URL
-    $ export SPLIT=0.3  # the fraction of the total set of labelled instances sampled for testing
+    $ export SPLIT=0.3 # the fraction of the total set of labelled instances sampled for testing
     $ cat test.data | ./test_mapper.py | sort | ./test_reducer.py > test
     
 The utility script display_stats.py can be used to process the resulting JSON object in the files produced by test_reducer.py to display a summary of the test run with accuracy, recall, precision and F1 metrics:
@@ -121,7 +122,7 @@ Generate a file that is a sampled set of instance predictions to pass to a (huma
 
 Given a file generated as in the previous section, we use a priority queue to randomly sample a set of predictions, emitting them with the uncertainty margin as the key. The reducer then emits the top k in decreasing order of uncertainty margin.
 
-    $ export K=30  # the number of queries to be sampled for labeling by an oracle
+    $ export K=30 # the number of queries to be sampled for labeling by an oracle
 	$ cat predictions | ./query_mapper.py | sort | ./query_reducer.py > queries
     
 ## Using Elastic MapReduce (EMR)
@@ -129,21 +130,25 @@ For large-scale data sets, the scripts can be run using Hadoop streaming in Elas
 
     $ ./elastic-mapreduce --create --stream \
 		--input s3n://path/to/your/bucket/train.data \
-		--mapper s3n://path/to/your/bucket/train_map.py \
-		--reducer s3n://path/to/your/bucket/train_reduce.py \
-		--output s3n://path/to/your/bucket/model
-		--cmdenv N=2000
+		--mapper s3n://path/to/your/bucket/train_mapper.py \
+		--reducer s3n://path/to/your/bucket/train_reducer.py \
+		--output s3n://path/to/your/bucket
+		--cmdenv N=2000,N_MODELS_KEY=MODELS
 		
-The result of running this EMR command would yield a bucket containing a file part-00000 that is a file with a single line consisting of the JSON object describing the trained model.
-		
-As another example, the EMR command that parallels the test example in the section "Validating and testing a model" above would be:
+The result of running this EMR command would be one or more files in TSV (tab-separated value) format, one for each of the reducer jobs that were run. Each line of those files will contain a key/value pair, the name of a feature and the sum of the weights across the models trained independently in each of the mapper tasks. If more than one reducer task is executed, there will be more than one file in the output bucket containing the key/value pairs used to encode the model as a JSON object; if so, concatentate them and pipe the output through model_encoder.py to generate the model JSON file, as for example:
+
+    $ cat part-* | ./model_encoder.py > model
+
+The resulting model file can then be used for testing, prediction, etc. For example, the EMR command that parallels the test example in the section "Validating and testing a model" above would be:
 
     $ ./elastic-mapreduce --create --stream \
 		--input s3n://path/to/your/bucket/test.data \
-		--mapper s3n://path/to/your/bucket/test_map.py \
-		--reducer s3n://path/to/your/bucket/test_reduce.py \
+		--mapper s3n://path/to/your/bucket/test_mapper.py \
+		--reducer s3n://path/to/your/bucket/test_reducer.py \
 		--output s3n://path/to/your/bucket/test
-		--cmdenv MODEL=https://s3.amazonaws.com/path/to/your/bucket/model/part-00000
+		--cmdenv MODEL=https://s3.amazonaws.com/path/to/your/bucket/model
+
+As described above for training using EMR, multiple reduce tasks will yield multiple output files in the specified output bucket; these can be simply concatenated together for use in further processing.
 		
 # License
 This code is provided under the terms of an MIT License [[9]]. See the LICENSE file for the copyright notice.
