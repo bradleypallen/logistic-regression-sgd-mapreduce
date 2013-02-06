@@ -21,7 +21,7 @@ This repository contains Python scripts for building binary classifiers using lo
     $ chmod +x *.py
 
 # Objects
-The scripts use JSON objects to represent instances, models, tests and predictions. These objects can have additional keys associated with them beyond the ones specified below; for example, each instance can have a key/value pair providing an identifier, contain key/value pairs with additional provenance information, etc.
+The scripts use JSON objects to represent instances, models, confusion matrices and predictions. These objects can have additional keys associated with them beyond the ones specified below; for example, each instance can have a key/value pair providing an identifier, contain key/value pairs with additional provenance information, etc.
 
 ## Instances
     <instance>           ::= <labeled-instance> | <unlabeled-instance>
@@ -43,8 +43,7 @@ The scripts use JSON objects to represent instances, models, tests and predictio
     <parameter>          ::= <feature>: <weight>
     <weight>             ::= a JSON float in the interval (-inf, inf)
 
-## Tests
-    <test>               ::= { "model": <uuid>, "date_created": <iso-date>, "confusion_matrix": <confusion-matrix> }
+## Confusion matrices
     <confusion-matrix>   ::= { "TP": <count>, "FP": <count>, "FN": <count>, "TN": <count> }
     
 ## Predictions
@@ -79,11 +78,11 @@ Three hyperparameters (MU, ETA and N) can be optionally set using environment va
     $ cat train.data | ./train_mapper.py | sort | ./train_reducer.py | ./model_encoder.py > /path/to/your/model
 
 ### Validating and testing a model
-Generate a timestamped record with a confusion matrix, computed by running a model against a test set of labeled instances. 
+Generate a confusion matrix, computed by running a model against a test set of labeled instances. 
 
 The location of the model is passed as an environment variable whose value is a valid URL. 
 
-Validation is performed against a training set generated as shown above in the section "Converting data in SVM<sup><i>Light</i></sup> format into labeled instances". A model produced as shown above in the section "Training a model" is passed to the mapper through the MODEL environment variable. Labeled instances with random_key less than SPLIT are used to generate predictions. Unlabeled instances are not processed.
+Validation is performed against a training set generated as shown above in the section "Converting data in SVM<sup><i>Light</i></sup> format into labeled instances". A model produced as shown above in the section "Training a model" is passed to the mapper through the MODEL environment variable. Labeled instances with random_key less than SPLIT are used to generate predictions. Unlabeled instances are not processed. The output of test_reducer.py is a file containing a confusion matrix JSON object that summarizes the performance of the model against the held-out validation set.
 
     $ export MODEL=file:///path/to/your/model # in this example we're loading from a file on the local system; note that this is expressed as a file: URL
     $ export SPLIT=0.3 # the fraction of the total set of labelled instances sampled for testing
@@ -95,7 +94,7 @@ Additionally, a model can be tested against a separately created hold-out test s
     $ export SPLIT=0.3 # the fraction of the total set of labelled instances sampled for testing
     $ cat test.data | ./test_mapper.py | sort | ./test_reducer.py > test
     
-The utility script display_stats.py can be used to process the resulting JSON object in the files produced by test_reducer.py to display a summary of the test run with accuracy, recall, precision and F1 metrics:
+The utility script display_stats.py can be used to process the resulting confusion matrix JSON object in the files produced by test_reducer.py to display a summary of the test run with accuracy, recall, precision and F1 metrics:
 
     $ cat validation | ./display_stats.py
     $ cat test | ./display_stats.py
@@ -148,7 +147,9 @@ The resulting model file can then be used for testing, prediction, etc. For exam
 		--output s3n://path/to/your/bucket/test
 		--cmdenv MODEL=https://s3.amazonaws.com/path/to/your/bucket/model
 
-As described above for training using EMR, multiple reduce tasks will yield multiple output files in the specified output bucket; these can be simply concatenated together for use in further processing.
+As described above for training using EMR, multiple reduce tasks will yield multiple output files, each containing a confusion matrix JSON object, in the specified output bucket; these can be simply concatenated together and piped through the merge_confusion_matrices.py script to yield a single confusion matrix, as for example:
+
+    $ cat part-* | ./merge_confusion_matrices.py > test
 		
 # License
 This code is provided under the terms of an MIT License [[9]]. See the LICENSE file for the copyright notice.

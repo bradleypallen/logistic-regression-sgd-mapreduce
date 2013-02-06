@@ -3,13 +3,11 @@
 import math, sys, json, datetime, urllib2, os
  
 def main():
-    model = json.loads(urllib2.urlopen(os.environ['MODEL']).readline().strip())
-    date_created = datetime.datetime.utcnow().isoformat() + 'Z'
     matrix = { "TP": 0, "FP": 0, "TN": 0, "FN": 0 }
     for line in sys.stdin:
         trial = line.strip().split('\t')
-        prediction = int(trial[0])
-        klass = int(trial[1])
+        prediction = int(trial[1])
+        klass = int(trial[2])
         if klass == 1:
             if prediction == 1:
                 matrix["TP"] += 1
@@ -20,11 +18,7 @@ def main():
                 matrix["TN"] += 1
             else:
                 matrix["FP"] += 1
-    print json.dumps({
-            "model": model["id"],
-            "date_created": date_created,
-            "confusion_matrix": matrix
-        })
+    print json.dumps(matrix)
  
 if __name__ == "__main__":
     main()
