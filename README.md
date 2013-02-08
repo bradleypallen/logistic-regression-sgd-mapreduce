@@ -35,10 +35,10 @@ The scripts use JSON objects to represent instances, models, confusion matrices 
     <feature>            ::= a JSON string
 
 ## Models
-    <model>              ::= { "id": <uuid>, "models": <float>, date_created": <iso-date>, "mu": <float>, "eta": <float>, "N": <positive-integer>, "parameters": <parameters> }
+    <model>              ::= { "id": <uuid>, "models": <float>, date_created": <iso-date>, "mu": <float>, "eta": <float>, "T": <positive-integer>, "parameters": <parameters> }
     <uuid>               ::= a JSON string that is a UUID
     <float>              ::= a JSON float
-    <count>              ::= a JSON int in the interval [0, inf)
+    <positive-integer>   ::= a JSON int in the interval [1, inf)
     <parameters>         ::= { <parameter>, … <parameter>, <parameter> }
     <parameter>          ::= <feature>: <weight>
     <weight>             ::= a JSON float in the interval (-inf, inf)
@@ -68,11 +68,11 @@ Convert a file with data in SVM<sup><i>Light</i></sup> [[8]] format into a file 
 ### Training a model
 Generate a model by running a single pass of the learning algorithm over a training set of labeled instances. 
 
-Three hyperparameters (MU, ETA and N) can be optionally set using environment variables. The SPLIT environment variable determines the train/test split; only those labeled instances with random_key greater than or equal to SPLIT are used to update the model parameters. The N_MODELS_KEY environment variable provides a unique key that will be used to compute the total number of models trained; take care to specify a key that cannot occur as a feature of any instance in the training set. When used from the command line this key will simply be assigned the value 1.0 by the mapper, as only one model will be trained corresponding to the single mapper process; when used with Hadoop streaming (as described below in the section "Using Elastic MapReduce") after the reduce tasks are executed, the value will be equal to the total number of mapper tasks executed, each of which trains a model whose weights will be averaged to generate the final output model. The mapper produces the feature string as the key with the trained weight; the reducer sums the weights associated with each key to generate the final set of key/value pairs as a tab-separated value (TSV) file. Unlabeled instances are not processed. model_encoder.py iterates through the output of the reduce step to generate a model JSON object, which can be written to a file.
+Three hyperparameters (MU, ETA and T) can be optionally set using environment variables. The SPLIT environment variable determines the train/test split; only those labeled instances with random_key greater than or equal to SPLIT are used to update the model parameters. The N_MODELS_KEY environment variable provides a unique key that will be used to compute the total number of models trained; take care to specify a key that cannot occur as a feature of any instance in the training set. When used from the command line this key will simply be assigned the value 1.0 by the mapper, as only one model will be trained corresponding to the single mapper process; when used with Hadoop streaming (as described below in the section "Using Elastic MapReduce") after the reduce tasks are executed, the value will be equal to the total number of mapper tasks executed, each of which trains a model whose weights will be averaged to generate the final output model. The mapper produces the feature string as the key with the trained weight; the reducer sums the weights associated with each key to generate the final set of key/value pairs as a tab-separated value (TSV) file. Unlabeled instances are not processed. model_encoder.py iterates through the output of the reduce step to generate a model JSON object, which can be written to a file.
 
-    $ export MU=0.002 # the regularization parameter
-    $ export ETA=0.5 # the learning rate
-    $ export N=2000 # the number of instances in the training set
+    $ export MU=0.002 # a hyperparameter to control how much weight to give to the regularization penalty term
+    $ export ETA=0.5 # a hyperparameter to control the learning rate
+    $ export T=10 # a hyperparameter specifiying the number of epochs (iterations over the training set) to perform
     $ export SPLIT=0.3 # the fraction of the total set of labelled instances sampled for testing (this setting yields a 70/30 train/test split)
     $ export N_MODELS_KEY=MODELS # the key used to accumulate the total number of models created by mapper tasks
     $ cat train.data | ./train_mapper.py | sort | ./train_reducer.py | ./model_encoder.py > /path/to/your/model
