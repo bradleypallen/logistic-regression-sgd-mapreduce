@@ -131,7 +131,7 @@ For large-scale data sets, the scripts can be run using Hadoop streaming in Elas
 		--input s3n://path/to/your/bucket/train.data \
 		--mapper s3n://path/to/your/bucket/train_mapper.py \
 		--reducer s3n://path/to/your/bucket/train_reducer.py \
-		--output s3n://path/to/your/bucket
+		--output s3n://path/to/your/bucket \
 		--cmdenv N=2000,N_MODELS_KEY=MODELS
 		
 The result of running this EMR command would be one or more files in TSV (tab-separated value) format, one for each of the reducer jobs that were run. Each line of those files will contain a key/value pair, the name of a feature and the sum of the weights across the models trained independently in each of the mapper tasks. If more than one reducer task is executed, there will be more than one file in the output bucket containing the key/value pairs used to encode the model as a JSON object; if so, concatentate them and pipe the output through model_encoder.py to generate the model JSON file, as for example:
@@ -144,7 +144,7 @@ The resulting model file can then be used for testing, prediction, etc. For exam
 		--input s3n://path/to/your/bucket/test.data \
 		--mapper s3n://path/to/your/bucket/test_mapper.py \
 		--reducer s3n://path/to/your/bucket/test_reducer.py \
-		--output s3n://path/to/your/bucket/test
+		--output s3n://path/to/your/bucket/test \
 		--cmdenv MODEL=https://s3.amazonaws.com/path/to/your/bucket/model
 
 As described above for training using EMR, multiple reduce tasks will yield multiple output files, each containing a confusion matrix JSON object, in the specified output bucket; these can be simply concatenated together and piped through the merge_confusion_matrices.py script to yield a single confusion matrix, as for example:
