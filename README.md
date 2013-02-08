@@ -72,7 +72,7 @@ Three hyperparameters (MU, ETA and T) can be optionally set using environment va
 
     $ export MU=0.002 # a hyperparameter to control how much weight to give to the regularization penalty term
     $ export ETA=0.5 # a hyperparameter to control the learning rate
-    $ export T=10 # a hyperparameter specifiying the number of epochs (iterations over the training set) to perform
+    $ export T=10 # a hyperparameter specifying the number of epochs (iterations over the training set) to perform
     $ export SPLIT=0.3 # the fraction of the total set of labelled instances sampled for testing (this setting yields a 70/30 train/test split)
     $ export N_MODELS_KEY=MODELS # the key used to accumulate the total number of models created by mapper tasks
     $ cat train.data | ./train_mapper.py | sort | ./train_reducer.py | ./model_encoder.py > /path/to/your/model
